@@ -8,30 +8,30 @@ ContextFlow is a modern, feature-rich chatbot application built with Next.js 15,
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
 ![Powered by Gemini](https://img.shields.io/badge/AI-Google_Gemini-orange)
 
-## ✨ Key Features
+## Key Features
 
-### 🎯 Core Functionality
+### Core Functionality
 - **Advanced Chat Interface**: Modern, responsive design with real-time AI conversations
 - **Context Management**: Upload PDFs and URLs to provide context for more accurate responses
 - **Smart Chat History**: Persistent conversation management with intelligent organization
 - **Multi-Modal Input**: Support for text input with voice interface placeholder
 - **Real-time Responses**: Powered by Google's latest Gemini AI models
 
-### 🎨 User Experience
+### User Experience
 - **Grok-Inspired Design**: Clean, modern interface inspired by premium AI chat applications
 - **Responsive Layout**: Seamless experience across desktop and mobile devices
 - **Collapsible Sidebar**: Space-efficient design with expandable navigation
 - **Smart Empty States**: Intuitive onboarding and helpful placeholder content
 - **Loading Animations**: Elegant typing indicators and smooth transitions
 
-### 🗂️ Advanced Features
+### Advanced Features
 - **Context Upload System**: Drag-and-drop file uploads for PDFs and web content
 - **Chat Session Management**: Create, switch between, and delete conversation threads
 - **Upload History**: Track and manage your document uploads with timestamps
 - **Auto-Save**: Automatic persistence of conversations and context across sessions
 - **Keyboard Shortcuts**: Enhanced productivity with intuitive key combinations
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Framework**: Next.js 15 with App Router & Turbopack
 - **Language**: TypeScript 5
@@ -41,7 +41,7 @@ ContextFlow is a modern, feature-rich chatbot application built with Next.js 15,
 - **Icons**: Lucide React
 - **State Management**: React Hooks with localStorage persistence
 
-## 📋 Prerequisites
+## Prerequisites
 
 Before running this application, make sure you have:
 
@@ -49,7 +49,7 @@ Before running this application, make sure you have:
 2. **npm** or **yarn** package manager
 3. **Google Gemini API Key** - Get one from [Google AI Studio](https://aistudio.google.com/)
 
-## 🔧 Installation & Setup
+## Installation & Setup
 
 ### 1. Clone and Install Dependencies
 
@@ -92,7 +92,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
 
-## 🗂️ Project Structure
+## Project Structure
 
 ```
 ContextFlow/
@@ -124,7 +124,7 @@ ContextFlow/
 └── README.md                    # This documentation
 ```
 
-## 🔌 API Integration
+## API Integration
 
 The application uses Google's latest Gemini models through the official `@google/generative-ai` package:
 
@@ -133,7 +133,7 @@ The application uses Google's latest Gemini models through the official `@google
 - **Environment Variables**: API keys stored securely server-side
 - **Error Handling**: Comprehensive error management with user-friendly messages
 
-## 🎨 Architecture & Components
+## Architecture & Components
 
 ### Core Components
 
@@ -152,7 +152,7 @@ Built on shadcn/ui with Radix UI primitives:
 - **Avatar**: User and bot profile indicators
 - **Card**: Content containers and message bubbles
 
-## 📱 Advanced Features
+## Advanced Features
 
 ### Context Management System
 - **File Upload**: Drag-and-drop PDF support for document context
@@ -173,7 +173,7 @@ Built on shadcn/ui with Radix UI primitives:
 - **Auto-scroll**: Smart message positioning
 - **Empty States**: Helpful onboarding and guidance
 
-## 🚀 Deployment
+## Deployment
 
 ### Production-Ready Features
 - **Environment Configuration**: Secure API key management
@@ -201,15 +201,15 @@ vercel --prod
 - **DigitalOcean App Platform**: Managed hosting with CI/CD
 - **AWS Amplify**: Full-stack hosting with global CDN
 
-## 🔒 Security & Privacy
+## Security & Privacy
 
-- ✅ **API Security**: Keys stored server-side, never exposed to client
-- ✅ **Data Privacy**: Conversations stored locally, no external data collection
-- ✅ **HTTPS Encryption**: All communications secured in production
-- ✅ **Input Validation**: Comprehensive request sanitization
-- ✅ **Error Handling**: Secure error messages without sensitive information
+- **API Security**: Keys stored server-side, never exposed to client
+- **Data Privacy**: Conversations stored locally, no external data collection
+- **HTTPS Encryption**: All communications secured in production
+- **Input Validation**: Comprehensive request sanitization
+- **Error Handling**: Secure error messages without sensitive information
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -243,7 +243,7 @@ vercel --prod
 - Check Network tab for API response times
 - Monitor localStorage usage for large conversation histories
 
-## 🛠️ Development
+## Development
 
 ### Getting Started
 ```bash
@@ -269,11 +269,11 @@ npm run dev
 - [Tailwind CSS](https://tailwindcss.com/docs) - Utility-first styling
 - [TypeScript](https://www.typescriptlang.org/) - Type-safe development
 
-## 📄 License
+## License
 
 This project is open source and available under the [MIT License](LICENSE).
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Please see our contributing guidelines:
 
@@ -283,7 +283,7 @@ We welcome contributions! Please see our contributing guidelines:
 4. Push to branch: `git push origin feature/amazing-feature`
 5. Open a Pull Request
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Google AI Team for the powerful Gemini API
 - shadcn for the beautiful UI component library
@@ -292,4 +292,4 @@ We welcome contributions! Please see our contributing guidelines:
 
 ---
 
-**Built with ❤️ using modern web technologies**
+**Built with modern web technologies**
