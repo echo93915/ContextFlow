@@ -3,7 +3,10 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 // Initialize the Gemini API client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
-export const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+// Get model name from environment variables
+const chatModel = process.env.GEMINI_CHAT_MODEL || 'gemini-1.5-flash';
+
+export const model = genAI.getGenerativeModel({ model: chatModel });
 
 export interface ChatMessage {
   id: string;

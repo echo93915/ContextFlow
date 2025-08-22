@@ -1,5 +1,3 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Card } from "@/components/ui/card";
 import { ChatMessage } from "@/lib/gemini";
 import { Bot, User } from "lucide-react";
 
@@ -11,26 +9,36 @@ export function ChatMessageComponent({ message }: ChatMessageProps) {
   const isUser = message.role === 'user';
   
   return (
-    <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'} mb-4`}>
-      <Avatar className="w-8 h-8">
-        <AvatarFallback>
-          {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
-        </AvatarFallback>
-      </Avatar>
-      
-      <Card className={`max-w-[80%] p-3 ${
-        isUser 
-          ? 'bg-primary text-primary-foreground' 
-          : 'bg-muted'
+    <div className={`flex gap-3 items-start ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+      {/* Avatar */}
+      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+        isUser ? 'bg-blue-600' : 'bg-black'
       }`}>
-        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-        <span className="text-xs opacity-70 mt-1 block">
+        {isUser ? (
+          <User className="w-4 h-4 text-white" />
+        ) : (
+          <Bot className="w-4 h-4 text-white" />
+        )}
+      </div>
+      
+      {/* Message Content */}
+      <div className={`max-w-[80%] ${isUser ? 'text-right' : 'text-left'}`}>
+        <div className={`rounded-2xl p-4 shadow-sm ${
+          isUser 
+            ? 'bg-blue-600 text-white' 
+            : 'bg-white text-gray-900'
+        }`}>
+          <p className="text-sm whitespace-pre-wrap leading-relaxed">
+            {message.content}
+          </p>
+        </div>
+        <span className="text-xs text-gray-500 mt-1 block px-2">
           {message.timestamp.toLocaleTimeString([], { 
             hour: '2-digit', 
             minute: '2-digit' 
           })}
         </span>
-      </Card>
+      </div>
     </div>
   );
 }
