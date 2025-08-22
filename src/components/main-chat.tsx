@@ -51,12 +51,13 @@ export function MainChat({ messages, isLoading, onSendMessage }: MainChatProps) 
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-gray-50">
+    <div className="flex-1 flex flex-col bg-gray-50 min-h-0">
       {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center p-8">
+      <div className="flex-1 flex flex-col p-8 min-h-0 overflow-hidden">
         {messages.length === 0 ? (
           /* Empty State - Grok-style centered layout */
-          <div className="w-full max-w-2xl">
+          <div className="flex-1 flex flex-col items-center justify-center">
+            <div className="w-full max-w-2xl">
             {/* Logo and Title */}
             <div className="text-center mb-12">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-black rounded-full mb-4">
@@ -131,11 +132,12 @@ export function MainChat({ messages, isLoading, onSendMessage }: MainChatProps) 
                 Features
               </button>
             </div>
+            </div>
           </div>
         ) : (
           /* Chat Messages */
-          <div className="w-full max-w-4xl flex flex-col h-full">
-            <ScrollArea className="flex-1 pr-4" ref={scrollAreaRef}>
+          <div className="w-full max-w-4xl flex flex-col h-full min-h-0">
+            <ScrollArea className="flex-1 min-h-0 pr-4" ref={scrollAreaRef}>
               <div className="space-y-6 pb-4">
                 {messages.map((message) => (
                   <ChatMessageComponent key={message.id} message={message} />

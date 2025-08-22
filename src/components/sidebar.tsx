@@ -8,8 +8,7 @@ import {
   ChevronRight,
   Trash2,
   FileText,
-  Link,
-  Eye
+  Link
 } from "lucide-react";
 
 interface UploadItem {
@@ -149,39 +148,29 @@ export function Sidebar({
                 {uploadHistory.slice(0, 5).map((upload) => (
                   <div
                     key={upload.id}
-                    className="group relative flex items-center rounded-lg hover:bg-gray-50 p-2 cursor-pointer"
+                    className="group relative flex items-center rounded-lg hover:bg-gray-50 p-2 cursor-pointer min-w-0"
                     onClick={() => onPreviewItem(upload)}
                   >
-                    <div className="flex-1 flex items-center gap-2">
-                      {upload.type === 'pdf' ? (
-                        <FileText className="w-4 h-4 text-red-500" />
-                      ) : (
-                        <Link className="w-4 h-4 text-blue-500" />
-                      )}
-                      <div className="flex-1 overflow-hidden">
-                        <div className="text-xs font-medium truncate">
+                    <div className="flex-1 flex items-center gap-2 min-w-0 overflow-hidden">
+                      <div className="flex-shrink-0">
+                        {upload.type === 'pdf' ? (
+                          <FileText className="w-4 h-4 text-red-500" />
+                        ) : (
+                          <Link className="w-4 h-4 text-blue-500" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0 overflow-hidden">
+                        <div className="text-xs font-medium truncate" title={upload.name}>
                           {upload.name}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 truncate">
                           {upload.timestamp.toLocaleDateString()}
                         </div>
                       </div>
                     </div>
                     
-                    {/* Preview and Delete Buttons */}
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-100 hover:text-blue-600"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onPreviewItem(upload);
-                        }}
-                        title="Preview Content"
-                      >
-                        <Eye className="w-3 h-3" />
-                      </Button>
+                    {/* Delete Button Only */}
+                    <div className="flex items-center">
                       <Button
                         variant="ghost"
                         size="sm"

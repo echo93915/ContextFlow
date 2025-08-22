@@ -34,6 +34,42 @@ ContextFlow is a modern, feature-rich chatbot application built with Next.js 15,
 - **Auto-Save**: Automatic persistence of conversations and context across sessions
 - **Keyboard Shortcuts**: Enhanced productivity with intuitive key combinations
 
+## RAG Pipeline Architecture
+
+ContextFlow implements a sophisticated Retrieval-Augmented Generation (RAG) pipeline that enables intelligent document processing and context-aware AI responses:
+
+### Document Processing Flow
+
+```
+PDF Upload → Text Extraction → Chunking → Embeddings → Vector Storage
+```
+
+1. **PDF Upload**: Users upload documents through the drag-and-drop interface
+2. **Text Extraction**: PDF content is extracted and preprocessed for optimal chunking
+3. **Chunking**: Documents are intelligently split into semantic chunks for better retrieval
+4. **Embeddings**: Text chunks are converted to high-dimensional vectors using advanced embedding models
+5. **Vector Storage**: Embeddings are stored in an optimized vector database for similarity search
+
+### Query Processing Flow
+
+```
+User Query → Embedding → Similarity Search → Context Retrieval → Answer Generation
+```
+
+1. **User Query**: Natural language questions or prompts from the user
+2. **Embedding**: Query is converted to a vector representation using the same embedding model
+3. **Similarity Search**: Vector database is searched to find the most relevant document chunks
+4. **Context Retrieval**: Top matching chunks are retrieved and prepared as context
+5. **Answer Generation**: Gemini AI generates responses using the retrieved context and user query
+
+### RAG Benefits
+
+- **Accurate Responses**: AI answers are grounded in your specific documents
+- **Source Attribution**: Responses can reference specific document sections
+- **Dynamic Knowledge**: Upload new documents to instantly expand the AI's knowledge base
+- **Context Preservation**: Maintains document context across conversation sessions
+- **Semantic Understanding**: Advanced similarity search finds relevant content even with different wording
+
 ## Tech Stack
 
 - **Framework**: Next.js 15 with App Router & Turbopack
@@ -41,6 +77,9 @@ ContextFlow is a modern, feature-rich chatbot application built with Next.js 15,
 - **UI Library**: shadcn/ui with Radix UI primitives
 - **Styling**: Tailwind CSS 4 with modern animations
 - **AI Integration**: Google Gemini API (@google/generative-ai)
+- **RAG Pipeline**: Vector embeddings and similarity search
+- **Document Processing**: PDF text extraction and intelligent chunking
+- **Vector Storage**: Enhanced vector store for semantic search
 - **Icons**: Lucide React
 - **State Management**: React Hooks with localStorage persistence
 
@@ -101,7 +140,14 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to see the a
 ContextFlow/
 ├── src/
 │   ├── app/
-│   │   ├── api/chat/route.ts     # Chat API endpoint with Gemini integration
+│   │   ├── api/
+│   │   │   ├── chat/route.ts            # Chat API endpoint with RAG integration
+│   │   │   ├── process-document/route.ts # Document upload and processing
+│   │   │   ├── extract-text/route.ts     # PDF text extraction
+│   │   │   ├── retrieve-context/route.ts # Context retrieval for queries
+│   │   │   ├── generate-title/route.ts   # Auto-generate chat titles
+│   │   │   ├── debug-rag/route.ts        # RAG pipeline debugging
+│   │   │   └── test-pdf/route.ts         # PDF processing testing
 │   │   ├── globals.css           # Global styles and animations
 │   │   ├── layout.tsx           # Root layout with metadata
 │   │   └── page.tsx             # Main application entry point
@@ -118,8 +164,14 @@ ContextFlow/
 │   │   ├── sidebar.tsx          # Navigation and context management
 │   │   └── header.tsx           # Application header with controls
 │   └── lib/
-│       ├── gemini.ts            # Gemini AI client and response handling
-│       └── utils.ts             # Utility functions and helpers
+│       ├── gemini.ts                    # Gemini AI client and response handling
+│       ├── enhanced-vector-store.ts     # Advanced vector storage with similarity search
+│       ├── pdf-processor.ts            # PDF text extraction and preprocessing
+│       ├── text-processing.ts          # Document chunking and text processing
+│       ├── vector-store.ts             # Core vector storage implementation
+│       ├── shared-document-store.ts    # Document management and persistence
+│       ├── llm-unified.ts              # Unified LLM interface for embeddings
+│       └── utils.ts                    # Utility functions and helpers
 ├── public/                      # Static assets and icons
 ├── components.json              # shadcn/ui configuration
 ├── .env.local                   # Environment variables (create this)
@@ -129,10 +181,22 @@ ContextFlow/
 
 ## API Integration
 
-The application uses Google's latest Gemini models through the official `@google/generative-ai` package:
+The application uses Google's latest Gemini models and implements a comprehensive RAG pipeline through multiple API endpoints:
 
-- **`src/lib/gemini.ts`**: Gemini API client configuration and response generation
-- **`src/app/api/chat/route.ts`**: Next.js API route handling chat requests securely
+### Core API Endpoints
+
+- **`src/app/api/chat/route.ts`**: Main chat endpoint with RAG context integration
+- **`src/app/api/process-document/route.ts`**: Document upload, processing, and vector storage
+- **`src/app/api/extract-text/route.ts`**: PDF text extraction and preprocessing
+- **`src/app/api/retrieve-context/route.ts`**: Semantic search and context retrieval
+- **`src/app/api/generate-title/route.ts`**: AI-powered chat title generation
+
+### RAG Implementation
+
+- **`src/lib/gemini.ts`**: Gemini API client with embedding support
+- **`src/lib/enhanced-vector-store.ts`**: Vector similarity search and storage
+- **`src/lib/pdf-processor.ts`**: PDF parsing and text extraction
+- **`src/lib/text-processing.ts`**: Document chunking and preprocessing
 - **Environment Variables**: API keys stored securely server-side
 - **Error Handling**: Comprehensive error management with user-friendly messages
 
@@ -158,12 +222,14 @@ Built on shadcn/ui with Radix UI primitives:
 
 ## Advanced Features
 
-### Context Management System
+### RAG-Powered Context Management
 
-- **File Upload**: Drag-and-drop PDF support for document context
-- **URL Integration**: Web content extraction for enhanced responses
-- **Upload History**: Persistent tracking of context sources
-- **Context Switching**: Easy management of different knowledge bases
+- **Intelligent Document Processing**: Advanced PDF upload with text extraction and semantic chunking
+- **Vector Embeddings**: Documents converted to high-dimensional vectors for precise similarity search
+- **Semantic Search**: Find relevant content even with different wording or synonyms
+- **Context Retrieval**: Automatically fetch the most relevant document sections for each query
+- **Upload History**: Persistent tracking of processed documents with vector storage
+- **Knowledge Base Management**: Easy switching between different document collections
 
 ### Smart Chat Management
 
