@@ -21,7 +21,7 @@ export function ChatLayout() {
   const [chatHistory, setChatHistory] = useState<Array<{ id: string; title: string; timestamp: Date; messages?: ChatMessage[] }>>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [uploadHistory, setUploadHistory] = useState<UploadItem[]>([]);
-  const [showUploadInterface, setShowUploadInterface] = useState(false);
+
 
   // Load messages from localStorage on mount
   useEffect(() => {
@@ -228,8 +228,6 @@ export function ChatLayout() {
   };
 
   const handleNewContext = () => {
-    // Toggle the upload interface
-    setShowUploadInterface(!showUploadInterface);
     // Clear current session but preserve chat history
     setMessages([]);
     setCurrentChatId(null);
@@ -312,7 +310,6 @@ export function ChatLayout() {
         <Sidebar
           chatHistory={chatHistory}
           uploadHistory={uploadHistory}
-          showUploadInterface={showUploadInterface}
           onNewContext={handleNewContext}
           onSelectChat={handleSelectChat}
           onDeleteChat={handleDeleteChat}

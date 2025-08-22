@@ -23,7 +23,6 @@ interface UploadItem {
 interface SidebarProps {
   chatHistory: Array<{ id: string; title: string; timestamp: Date; messages?: unknown[] }>;
   uploadHistory: UploadItem[];
-  showUploadInterface: boolean;
   onNewContext: () => void;
   onSelectChat: (chatId: string) => void;
   onDeleteChat: (chatId: string) => void;
@@ -38,7 +37,6 @@ interface SidebarProps {
 export function Sidebar({ 
   chatHistory,
   uploadHistory,
-  showUploadInterface,
   onNewContext, 
   onSelectChat, 
   onDeleteChat,
@@ -108,35 +106,33 @@ export function Sidebar({
             Context
           </div>
           
-          {/* Upload Interface */}
-          {showUploadInterface && (
-            <div className="px-2 pb-2">
-              <div className="grid grid-cols-2 gap-2 mb-3">
-                {/* PDF Upload Button */}
-                <div className="relative">
-                  <input
-                    type="file"
-                    accept=".pdf"
-                    onChange={handleFileSelect}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
-                  <div className="w-full h-16 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer">
-                    <FileText className="w-5 h-5 text-gray-400 mb-1" />
-                    <span className="text-xs text-gray-500">PDF</span>
-                  </div>
-                </div>
-
-                {/* URL Upload Button */}
-                <div
-                  onClick={handleUrlSubmit}
-                  className="w-full h-16 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer"
-                >
-                  <Link className="w-5 h-5 text-gray-400 mb-1" />
-                  <span className="text-xs text-gray-500">URL</span>
+          {/* Upload Interface - Always Visible */}
+          <div className="px-2 pb-2">
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              {/* PDF Upload Button */}
+              <div className="relative">
+                <input
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleFileSelect}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                <div className="w-full h-16 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer">
+                  <FileText className="w-5 h-5 text-gray-400 mb-1" />
+                  <span className="text-xs text-gray-500">PDF</span>
                 </div>
               </div>
+
+              {/* URL Upload Button */}
+              <div
+                onClick={handleUrlSubmit}
+                className="w-full h-16 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer"
+              >
+                <Link className="w-5 h-5 text-gray-400 mb-1" />
+                <span className="text-xs text-gray-500">URL</span>
+              </div>
             </div>
-          )}
+          </div>
 
           {/* Upload History */}
           <div className="px-2 pb-2">
