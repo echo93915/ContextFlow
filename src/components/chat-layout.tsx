@@ -291,7 +291,8 @@ export function ChatLayout() {
           status: extractResponse.status,
           statusText: extractResponse.statusText,
           responseText,
-          url: extractResponse.url
+          url: extractResponse.url,
+          headers: Object.fromEntries(extractResponse.headers.entries())
         });
         
         let errorData: any = {};
@@ -304,7 +305,10 @@ export function ChatLayout() {
           errorData = { details: responseText || `HTTP ${extractResponse.status}: ${extractResponse.statusText}` };
         }
         
-        throw new Error(`Failed to extract text from PDF: ${errorData.details || errorData.error || 'Unknown error'}`);
+        // Show user-friendly error message
+        const errorMessage = errorData.details || errorData.error || `Server error ${extractResponse.status}`;
+        alert(`Failed to process PDF: ${errorMessage}`);
+        throw new Error(`Failed to extract text from PDF: ${errorMessage}`);
       }
       
       const { text, metadata } = await extractResponse.json();

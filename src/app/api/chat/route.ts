@@ -1,77 +1,151 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateResponse } from '@/lib/gemini';
+import { getUnifiedLLM } from '@/lib/llm-unified';
+import { getVectorStore } from '@/lib/enhanced-vector-store';
 import { sharedDocumentStore } from '@/lib/shared-document-store';
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, useContext = true } = await request.json();
+    const { message, useContext = true, topK = 4, minScore = 0.1 } = await request.json();
 
-    if (!message) {
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
       return NextResponse.json(
-        { error: 'Message is required' },
+        { error: 'Valid message is required' },
         { status: 400 }
       );
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-      return NextResponse.json(
-        { error: 'Gemini API key not configured' },
-        { status: 500 }
-      );
-    }
+    console.log(`💬 Chat request: "${message.slice(0, 100)}${message.length > 100 ? '...' : ''}"`);
 
-    let enhancedPrompt = message;
-    let contextUsed = false;
+    // Initialize the unified LLM interface
+    const llm = getUnifiedLLM({
+      geminiApiKey: process.env.GEMINI_API_KEY,
+      openaiApiKey: process.env.OPENAI_API_KEY,
+      preferredProvider: 'auto'
+    });
 
-    // If context is requested and we have documents, retrieve relevant context
-    if (useContext && sharedDocumentStore.getSize() > 0) {
+    let contextInfo: any = {
+      used: false,
+      chunks: [],
+      sources: [],
+      totalResults: 0,
+      query: message
+    };
+
+    let systemMessage = "You are a precise assistant that answers questions based strictly on the provided context. If no context is provided or the context doesn't contain relevant information, please say so and provide a general helpful response.";
+    let userMessage = message;
+
+    // If context is requested, retrieve relevant context using the enhanced vector store
+    if (useContext) {
       try {
-        // Get all available documents
-        const documents = sharedDocumentStore.getAllDocuments();
-        
-        // Import findRelevantChunks dynamically to avoid import issues
-        const { findRelevantChunks } = await import('@/lib/text-processing');
-        
-        // Find relevant chunks for the user's message
-        const relevantResults = await findRelevantChunks(message, documents, 3);
-        
-        if (relevantResults.length > 0) {
-          // Build context from relevant chunks
-          const contextText = relevantResults
-            .map((result, index) => 
-              `[Context ${index + 1} from ${result.document.metadata.title}]:\n${result.chunk.text}`
-            )
-            .join('\n\n');
+        const vectorStore = getVectorStore();
+        const stats = vectorStore.getStats();
+
+        if (stats.totalEntries > 0) {
+          console.log('🔍 Retrieving context using enhanced vector store...');
           
-          // Enhance the prompt with context
-          enhancedPrompt = `Based on the following context information, please answer the user's question. If the context doesn't contain relevant information, you can still provide a helpful response based on your general knowledge.
+          // Generate embedding for the query
+          const queryEmbeddings = await llm.generateEmbeddings([message]);
+          const queryEmbedding = queryEmbeddings[0];
+
+          if (queryEmbedding && queryEmbedding.embedding) {
+            // Search for relevant chunks
+            const searchResults = await vectorStore.searchSimilar(
+              queryEmbedding.embedding,
+              topK,
+              minScore
+            );
+
+            if (searchResults.length > 0) {
+              console.log(`✅ Found ${searchResults.length} relevant chunks`);
+
+              // Build context from relevant chunks
+              const contextChunks = searchResults.map((result, index) => ({
+                index: index + 1,
+                text: result.chunk.text,
+                source: result.chunk.metadata.source,
+                score: result.score,
+                chunkIndex: result.chunk.metadata.chunkIndex
+              }));
+
+              const contextText = contextChunks
+                .map(chunk => `[Context ${chunk.index}]\n${chunk.text}`)
+                .join('\n\n');
+
+              // Enhanced prompt construction based on proven workflow
+              systemMessage = "You are a precise assistant that answers questions based strictly on the provided context. Focus on accuracy and cite the context when appropriate.";
+              
+              userMessage = `Question: ${message}
 
 Context:
 ${contextText}
 
-User Question: ${message}
+Please answer the question based strictly on the provided context.`;
 
-Please provide a comprehensive answer:`;
-          
-          contextUsed = true;
+              contextInfo = {
+                used: true,
+                chunks: contextChunks,
+                sources: [...new Set(contextChunks.map(c => c.source))],
+                totalResults: searchResults.length,
+                query: message,
+                searchParams: { topK, minScore },
+                queryEmbedding: {
+                  provider: queryEmbedding.provider,
+                  model: queryEmbedding.model,
+                  dimensions: queryEmbedding.dimensions
+                }
+              };
+            } else {
+              console.log('ℹ️ No relevant context found for the query');
+            }
+          }
+        } else {
+          console.log('ℹ️ No documents available for context retrieval');
         }
       } catch (contextError) {
-        console.error('Error retrieving context:', contextError);
+        console.error('❌ Error retrieving context:', contextError);
         // Continue without context if there's an error
+        contextInfo.error = contextError instanceof Error ? contextError.message : 'Unknown context error';
       }
     }
 
-    const response = await generateResponse(enhancedPrompt);
+    // Generate chat completion using the unified LLM interface
+    console.log('🤖 Generating chat response...');
+    const chatResult = await llm.generateChatCompletion(systemMessage, userMessage);
+
+    console.log(`✅ Response generated using ${chatResult.provider} (${chatResult.model})`);
 
     return NextResponse.json({ 
-      response,
-      contextUsed,
-      enhancedPrompt: contextUsed ? enhancedPrompt : undefined
+      response: chatResult.response,
+      contextUsed: contextInfo.used,
+      contextInfo,
+      llmInfo: {
+        provider: chatResult.provider,
+        model: chatResult.model,
+        tokensUsed: chatResult.tokensUsed
+      }
     });
+
   } catch (error) {
-    console.error('Error in chat API:', error);
+    console.error('❌ Error in chat API:', error);
+    
+    let errorMessage = 'Failed to generate response';
+    if (error instanceof Error) {
+      if (error.message.includes('API key')) {
+        errorMessage = 'API configuration error - check your API keys';
+      } else if (error.message.includes('embedding')) {
+        errorMessage = 'Failed to process context - embedding generation failed';
+      } else if (error.message.includes('chat')) {
+        errorMessage = 'Failed to generate chat response';
+      } else {
+        errorMessage = error.message;
+      }
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to generate response' },
+      { 
+        error: errorMessage,
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

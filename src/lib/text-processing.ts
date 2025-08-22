@@ -1,7 +1,7 @@
 import { pipeline, env } from '@xenova/transformers';
 
-// Configure transformers to use local models
-env.allowRemoteModels = false;
+// Configure transformers to allow remote models for better compatibility
+env.allowRemoteModels = true;
 env.allowLocalModels = true;
 
 export interface TextChunk {

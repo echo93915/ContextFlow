@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { processDocument } from '@/lib/text-processing';
+import { chunkText, ProcessedDocument } from '@/lib/pdf-processor';
+import { getUnifiedLLM } from '@/lib/llm-unified';
+import { getVectorStore } from '@/lib/enhanced-vector-store';
 import { sharedDocumentStore } from '@/lib/shared-document-store';
 
 export async function POST(request: NextRequest) {
@@ -13,24 +15,92 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Process the document into chunks with embeddings
-    const processedDocument = await processDocument(text, source, sourceType, title);
+    console.log(`🔄 Processing document: ${title || source}`);
+    console.log(`📄 Text length: ${text.length} characters`);
+
+    // Chunk the text using the proven algorithm from DocuChat (1200 chars, 200 overlap)
+    const chunks = chunkText(text, 1200, 200, source, sourceType);
+    console.log(`✂️ Created ${chunks.length} chunks`);
+
+    // Initialize the unified LLM interface
+    const llm = getUnifiedLLM({
+      geminiApiKey: process.env.GEMINI_API_KEY,
+      openaiApiKey: process.env.OPENAI_API_KEY,
+      preferredProvider: 'auto'
+    });
+
+    // Generate embeddings for all chunks
+    console.log('🧮 Generating embeddings...');
+    const chunkTexts = chunks.map(chunk => chunk.text);
+    const embeddings = await llm.generateEmbeddings(chunkTexts);
+    console.log(`✅ Generated ${embeddings.length} embeddings`);
+
+    // Store in the enhanced vector store
+    const vectorStore = getVectorStore();
+    await vectorStore.addChunks(chunks, embeddings);
+
+    // Create processed document for legacy compatibility
+    const processedDocument: ProcessedDocument = {
+      id: crypto.randomUUID(),
+      chunks,
+      metadata: {
+        title: title || source || 'Untitled Document',
+        author: undefined,
+        creator: undefined,
+        producer: undefined,
+        creationDate: undefined,
+        modificationDate: undefined,
+        totalPages: 0, // Will be updated if this is a PDF
+        totalCharacters: text.length,
+        sourceType: sourceType as 'pdf' | 'url',
+        source,
+        processedAt: new Date()
+      }
+    };
 
     // Store the processed document (associate with upload ID)
     if (uploadId) {
       sharedDocumentStore.set(uploadId, processedDocument);
     }
 
+    // Get vector store statistics
+    const stats = vectorStore.getStats();
+
     return NextResponse.json({
       success: true,
       documentId: processedDocument.id,
-      chunksCount: processedDocument.chunks.length,
-      title: processedDocument.metadata.title
+      chunksCount: chunks.length,
+      title: title || source,
+      vectorStoreStats: {
+        totalEntries: stats.totalEntries,
+        totalSources: stats.totalSources,
+        providers: stats.providers
+      },
+      embeddingInfo: {
+        provider: embeddings[0]?.provider || 'unknown',
+        model: embeddings[0]?.model || 'unknown',
+        dimensions: embeddings[0]?.dimensions || 0
+      }
     });
   } catch (error) {
-    console.error('Error processing document:', error);
+    console.error('❌ Error processing document:', error);
+    
+    let errorMessage = 'Failed to process document';
+    if (error instanceof Error) {
+      if (error.message.includes('embedding')) {
+        errorMessage = 'Failed to generate embeddings - check API keys';
+      } else if (error.message.includes('chunking')) {
+        errorMessage = 'Failed to chunk document text';
+      } else {
+        errorMessage = error.message;
+      }
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to process document' },
+      { 
+        error: errorMessage,
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

@@ -1,4 +1,4 @@
-import { ProcessedDocument } from './text-processing';
+import { ProcessedDocument } from './pdf-processor';
 
 // Shared global document store that persists across API routes
 class SharedDocumentStore {

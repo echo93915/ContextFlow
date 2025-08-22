@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import { extractTextFromPDF } from '@/lib/pdf-processor';
 
 export async function POST(request: NextRequest) {
   console.log('🚀 Extract-text API called at:', new Date().toISOString());
@@ -18,33 +19,77 @@ export async function POST(request: NextRequest) {
     if (type === 'pdf') {
       const file = formData.get('file') as File;
       if (!file) {
-        return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+        console.error('❌ No file provided in request');
+        return NextResponse.json({ 
+          error: 'No file provided',
+          details: 'File field is missing from form data'
+        }, { status: 400 });
       }
 
-      console.log('📄 Processing PDF:', file.name, 'Size:', file.size, 'Type:', file.type);
+      console.log('📄 Processing PDF:', {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        lastModified: file.lastModified
+      });
+
+      // Validate file type
+      if (!file.type.includes('pdf') && !file.name.toLowerCase().endsWith('.pdf')) {
+        console.error('❌ Invalid file type:', file.type);
+        return NextResponse.json({ 
+          error: 'Invalid file type',
+          details: 'Only PDF files are supported'
+        }, { status: 400 });
+      }
 
       try {
-        // Dynamic import of pdf-parse to handle potential module issues
-        const pdfParse = (await import('pdf-parse')).default;
-        
-        const buffer = Buffer.from(await file.arrayBuffer());
+        console.log('📊 Converting file to buffer...');
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
         console.log('📊 Buffer created, size:', buffer.length);
         
-        const data = await pdfParse(buffer);
-        console.log('✅ PDF parsed successfully, pages:', data.numpages, 'text length:', data.text.length);
+        if (buffer.length === 0) {
+          throw new Error('File appears to be empty');
+        }
+        
+        // Use the enhanced PDF processor
+        const { text, metadata } = await extractTextFromPDF(buffer);
         
         return NextResponse.json({ 
-          text: data.text,
+          text,
           metadata: {
-            pages: data.numpages,
-            info: data.info
+            ...metadata,
+            extractionMethod: 'enhanced-pdf-processor'
           }
         });
       } catch (pdfError) {
-        console.error('❌ PDF parsing error:', pdfError);
+        console.error('❌ PDF parsing error:', {
+          error: pdfError,
+          message: pdfError instanceof Error ? pdfError.message : 'Unknown error',
+          stack: pdfError instanceof Error ? pdfError.stack : undefined,
+          name: pdfError instanceof Error ? pdfError.name : 'Unknown'
+        });
+        
+        // Provide more specific error messages
+        let errorMessage = 'Unknown PDF parsing error';
+        if (pdfError instanceof Error) {
+          if (pdfError.message.includes('MODULE_NOT_FOUND') || pdfError.message.includes('Cannot find module')) {
+            errorMessage = 'PDF parsing library not properly installed';
+          } else if (pdfError.message.includes('timeout')) {
+            errorMessage = 'PDF processing timed out - file may be too large or complex';
+          } else if (pdfError.message.includes('invalid header')) {
+            errorMessage = 'File is not a valid PDF document';
+          } else if (pdfError.message.includes('No text content')) {
+            errorMessage = 'PDF contains no extractable text - it may be image-based or encrypted';
+          } else {
+            errorMessage = pdfError.message;
+          }
+        }
+        
         return NextResponse.json({ 
           error: 'Failed to parse PDF', 
-          details: pdfError instanceof Error ? pdfError.message : 'Unknown PDF error'
+          details: errorMessage,
+          type: 'PDF_PARSE_ERROR'
         }, { status: 500 });
       }
     } 
