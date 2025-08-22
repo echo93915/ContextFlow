@@ -28,7 +28,7 @@ interface SidebarProps {
   onSelectChat: (chatId: string) => void;
   onDeleteChat: (chatId: string) => void;
   onFileUpload: (file: File) => void;
-  onUrlUpload: (url: string, title: string) => void;
+  onUrlUpload: (url: string) => void;
   onDeleteUpload: (uploadId: string) => void;
   collapsed?: boolean;
   onToggleCollapse: () => void;
@@ -75,9 +75,8 @@ export function Sidebar({
 
   const handleUrlSubmit = () => {
     const url = prompt('Enter URL:');
-    const title = prompt('Enter title (optional):');
     if (url) {
-      onUrlUpload(url, title || '');
+      onUrlUpload(url);
     }
   };
 

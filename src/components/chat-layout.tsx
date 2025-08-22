@@ -252,11 +252,32 @@ export function ChatLayout() {
     });
   };
 
-  const handleUrlUpload = (url: string, title: string) => {
+  const handleUrlUpload = async (url: string) => {
+    // Generate title using Gemini API
+    let title = 'Web Document'; // Default fallback
+    
+    try {
+      const response = await fetch('/api/generate-title', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url }),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        title = data.title;
+      }
+    } catch (error) {
+      console.error('Error generating title:', error);
+      // Keep default title on error
+    }
+
     const newUpload: UploadItem = {
       id: crypto.randomUUID(),
       type: 'url',
-      name: title || url,
+      name: title,
       content: url,
       timestamp: new Date()
     };

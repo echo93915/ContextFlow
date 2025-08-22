@@ -11,6 +11,7 @@ ContextFlow is a modern, feature-rich chatbot application built with Next.js 15,
 ## Key Features
 
 ### Core Functionality
+
 - **Advanced Chat Interface**: Modern, responsive design with real-time AI conversations
 - **Context Management**: Upload PDFs and URLs to provide context for more accurate responses
 - **Smart Chat History**: Persistent conversation management with intelligent organization
@@ -18,6 +19,7 @@ ContextFlow is a modern, feature-rich chatbot application built with Next.js 15,
 - **Real-time Responses**: Powered by Google's latest Gemini AI models
 
 ### User Experience
+
 - **Grok-Inspired Design**: Clean, modern interface inspired by premium AI chat applications
 - **Responsive Layout**: Seamless experience across desktop and mobile devices
 - **Collapsible Sidebar**: Space-efficient design with expandable navigation
@@ -25,6 +27,7 @@ ContextFlow is a modern, feature-rich chatbot application built with Next.js 15,
 - **Loading Animations**: Elegant typing indicators and smooth transitions
 
 ### Advanced Features
+
 - **Context Upload System**: Drag-and-drop file uploads for PDFs and web content
 - **Chat Session Management**: Create, switch between, and delete conversation threads
 - **Upload History**: Track and manage your document uploads with timestamps
@@ -146,6 +149,7 @@ The application uses Google's latest Gemini models through the official `@google
 ### UI Component Library
 
 Built on shadcn/ui with Radix UI primitives:
+
 - **Button**: Interactive elements with hover states
 - **Input**: Form controls with validation
 - **ScrollArea**: Smooth scrolling with custom styling
@@ -155,18 +159,21 @@ Built on shadcn/ui with Radix UI primitives:
 ## Advanced Features
 
 ### Context Management System
+
 - **File Upload**: Drag-and-drop PDF support for document context
 - **URL Integration**: Web content extraction for enhanced responses
 - **Upload History**: Persistent tracking of context sources
 - **Context Switching**: Easy management of different knowledge bases
 
 ### Smart Chat Management
+
 - **Session Persistence**: Automatic saving of conversations
 - **Chat History**: Organized conversation threads with timestamps
 - **Quick Switching**: Navigate between different chat sessions
 - **Bulk Operations**: Delete and manage multiple conversations
 
 ### Enhanced User Experience
+
 - **Responsive Design**: Mobile-first approach with desktop optimization
 - **Loading States**: Elegant animations during AI processing
 - **Keyboard Navigation**: Full keyboard accessibility
@@ -176,6 +183,7 @@ Built on shadcn/ui with Radix UI primitives:
 ## Deployment
 
 ### Production-Ready Features
+
 - **Environment Configuration**: Secure API key management
 - **No Backend Required**: Serverless architecture using Next.js API routes
 - **Static Asset Optimization**: Efficient loading and caching
@@ -184,6 +192,7 @@ Built on shadcn/ui with Radix UI primitives:
 ### Recommended Platforms
 
 #### Vercel (Recommended)
+
 ```bash
 # Deploy to Vercel with zero configuration
 npm run build
@@ -196,6 +205,7 @@ vercel --prod
 4. Deploy automatically with each push
 
 #### Other Supported Platforms
+
 - **Netlify**: Full Next.js support with edge functions
 - **Railway**: Container deployment with automatic scaling
 - **DigitalOcean App Platform**: Managed hosting with CI/CD
@@ -214,20 +224,22 @@ vercel --prod
 ### Common Issues
 
 1. **API Configuration**
+
    ```bash
    # Check if API key is configured
    echo $GEMINI_API_KEY
-   
+
    # Restart development server
    npm run dev
    ```
 
 2. **Build Errors**
+
    ```bash
    # Clean install dependencies
    rm -rf node_modules package-lock.json
    npm install
-   
+
    # Verify Node.js version (18+)
    node --version
    ```
@@ -246,6 +258,7 @@ vercel --prod
 ## Development
 
 ### Getting Started
+
 ```bash
 # Clone and setup
 git clone https://github.com/echo93915/ContextFlow.git
@@ -257,12 +270,14 @@ npm run dev
 ```
 
 ### Available Scripts
+
 - `npm run dev` - Start development server with Turbopack
 - `npm run build` - Create production build
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint for code quality
 
 ### Built With
+
 - [Next.js 15](https://nextjs.org/docs) - Full-stack React framework
 - [shadcn/ui](https://ui.shadcn.com/) - Modern component library
 - [Google Gemini API](https://ai.google.dev/docs) - Advanced AI integration
