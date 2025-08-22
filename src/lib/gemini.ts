@@ -13,6 +13,7 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  contextUsed?: boolean;
 }
 
 export async function generateResponse(prompt: string): Promise<string> {

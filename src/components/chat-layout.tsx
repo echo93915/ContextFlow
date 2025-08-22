@@ -155,8 +155,12 @@ export function ChatLayout() {
 
       const data = await response.json();
       
-      // Add assistant message
-      addMessage({ role: 'assistant', content: data.response });
+      // Add assistant message with context information
+      addMessage({ 
+        role: 'assistant', 
+        content: data.response,
+        contextUsed: data.contextUsed 
+      });
     } catch (error) {
       console.error('Error:', error);
       addMessage({ 
@@ -236,28 +240,136 @@ export function ChatLayout() {
     localStorage.removeItem('chatbot-messages');
   };
 
-  const handleFileUpload = (file: File) => {
-    const newUpload: UploadItem = {
-      id: crypto.randomUUID(),
-      type: 'pdf',
-      name: file.name,
-      content: file.name, // In a real app, this would be the processed file content
-      timestamp: new Date()
-    };
+  const handleFileUpload = async (file: File) => {
+    const uploadId = crypto.randomUUID();
     
-    setUploadHistory(prev => {
-      const updated = [newUpload, ...prev].slice(0, 20); // Keep last 20 uploads
-      localStorage.setItem('upload-history', JSON.stringify(updated));
-      return updated;
-    });
+    try {
+      // Extract text from PDF
+      console.log('🔄 Starting PDF text extraction for:', file.name);
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('type', 'pdf');
+      
+      console.log('📤 Sending request to /api/extract-text');
+      console.log('📋 FormData contents:', {
+        file: file.name,
+        type: 'pdf',
+        fileSize: file.size,
+        fileType: file.type
+      });
+      
+      let extractResponse: Response;
+      try {
+        extractResponse = await fetch('/api/extract-text', {
+          method: 'POST',
+          body: formData,
+        });
+        console.log('📡 Response received:', {
+          ok: extractResponse.ok,
+          status: extractResponse.status,
+          statusText: extractResponse.statusText,
+          url: extractResponse.url,
+          headers: Object.fromEntries(extractResponse.headers.entries())
+        });
+      } catch (fetchError) {
+        console.error('❌ Fetch request failed:', fetchError);
+        throw new Error(`Network error: ${fetchError instanceof Error ? fetchError.message : 'Unknown fetch error'}`);
+      }
+      
+      if (!extractResponse.ok) {
+        let responseText: string;
+        try {
+          responseText = await extractResponse.text();
+          console.log('📄 Response text:', responseText);
+        } catch (textError) {
+          console.error('❌ Failed to read response text:', textError);
+          responseText = 'Could not read response text';
+        }
+        
+        console.error('❌ PDF extraction failed:', {
+          status: extractResponse.status,
+          statusText: extractResponse.statusText,
+          responseText,
+          url: extractResponse.url
+        });
+        
+        let errorData: any = {};
+        try {
+          if (responseText) {
+            errorData = JSON.parse(responseText);
+          }
+        } catch (jsonError) {
+          console.log('📝 Response is not JSON, using as plain text');
+          errorData = { details: responseText || `HTTP ${extractResponse.status}: ${extractResponse.statusText}` };
+        }
+        
+        throw new Error(`Failed to extract text from PDF: ${errorData.details || errorData.error || 'Unknown error'}`);
+      }
+      
+      const { text, metadata } = await extractResponse.json();
+      
+      // Process document for RAG
+      const processResponse = await fetch('/api/process-document', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text,
+          source: file.name,
+          sourceType: 'pdf',
+          title: file.name,
+          uploadId,
+        }),
+      });
+      
+      if (!processResponse.ok) {
+        throw new Error('Failed to process document');
+      }
+      
+      // Create upload item
+      const newUpload: UploadItem = {
+        id: uploadId,
+        type: 'pdf',
+        name: file.name,
+        content: file.name, // Store filename for display
+        timestamp: new Date()
+      };
+      
+      setUploadHistory(prev => {
+        const updated = [newUpload, ...prev].slice(0, 20);
+        localStorage.setItem('upload-history', JSON.stringify(updated));
+        return updated;
+      });
+      
+      console.log('PDF processed successfully for RAG system');
+    } catch (error) {
+      console.error('Error processing PDF:', error);
+      // Still add to upload history even if processing fails
+      const newUpload: UploadItem = {
+        id: uploadId,
+        type: 'pdf',
+        name: file.name,
+        content: file.name,
+        timestamp: new Date()
+      };
+      
+      setUploadHistory(prev => {
+        const updated = [newUpload, ...prev].slice(0, 20);
+        localStorage.setItem('upload-history', JSON.stringify(updated));
+        return updated;
+      });
+    }
   };
 
   const handleUrlUpload = async (url: string) => {
-    // Generate title using Gemini API
+    const uploadId = crypto.randomUUID();
     let title = 'Web Document'; // Default fallback
     
     try {
-      const response = await fetch('/api/generate-title', {
+      // Generate title using Gemini API
+      const titleResponse = await fetch('/api/generate-title', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -265,17 +377,74 @@ export function ChatLayout() {
         body: JSON.stringify({ url }),
       });
       
-      if (response.ok) {
-        const data = await response.json();
+      if (titleResponse.ok) {
+        const data = await titleResponse.json();
         title = data.title;
       }
+
+      // Extract text from URL
+      const formData = new FormData();
+      formData.append('url', url);
+      formData.append('type', 'url');
+      
+      const extractResponse = await fetch('/api/extract-text', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!extractResponse.ok) {
+        const responseText = await extractResponse.text().catch(() => 'No response text');
+        console.error('❌ URL extraction failed:', {
+          status: extractResponse.status,
+          statusText: extractResponse.statusText,
+          responseText,
+          url: extractResponse.url
+        });
+        
+        let errorData: any = {};
+        try {
+          errorData = JSON.parse(responseText);
+        } catch {
+          errorData = { details: responseText || `HTTP ${extractResponse.status}` };
+        }
+        
+        throw new Error(`Failed to extract text from URL: ${errorData.details || errorData.error || 'Unknown error'}`);
+      }
+      
+      const { text, metadata } = await extractResponse.json();
+      
+      // Use extracted title if available
+      if (metadata.title) {
+        title = metadata.title.slice(0, 50) + (metadata.title.length > 50 ? '...' : '');
+      }
+      
+      // Process document for RAG
+      const processResponse = await fetch('/api/process-document', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text,
+          source: url,
+          sourceType: 'url',
+          title,
+          uploadId,
+        }),
+      });
+      
+      if (!processResponse.ok) {
+        throw new Error('Failed to process document');
+      }
+      
+      console.log('URL processed successfully for RAG system');
     } catch (error) {
-      console.error('Error generating title:', error);
-      // Keep default title on error
+      console.error('Error processing URL:', error);
+      // Continue with title generation fallback
     }
 
     const newUpload: UploadItem = {
-      id: crypto.randomUUID(),
+      id: uploadId,
       type: 'url',
       name: title,
       content: url,
@@ -283,7 +452,7 @@ export function ChatLayout() {
     };
     
     setUploadHistory(prev => {
-      const updated = [newUpload, ...prev].slice(0, 20); // Keep last 20 uploads
+      const updated = [newUpload, ...prev].slice(0, 20);
       localStorage.setItem('upload-history', JSON.stringify(updated));
       return updated;
     });

@@ -1,5 +1,5 @@
 import { ChatMessage } from "@/lib/gemini";
-import { Bot, User } from "lucide-react";
+import { Bot, User, Brain } from "lucide-react";
 
 interface ChatMessageProps {
   message: ChatMessage;
@@ -32,12 +32,20 @@ export function ChatMessageComponent({ message }: ChatMessageProps) {
             {message.content}
           </p>
         </div>
-        <span className="text-xs text-gray-500 mt-1 block px-2">
-          {message.timestamp.toLocaleTimeString([], { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          })}
-        </span>
+        <div className="flex items-center justify-between mt-1 px-2">
+          <span className="text-xs text-gray-500">
+            {message.timestamp.toLocaleTimeString([], { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            })}
+          </span>
+          {message.contextUsed && message.role === 'assistant' && (
+            <div className="flex items-center gap-1">
+              <Brain className="w-3 h-3 text-blue-500" />
+              <span className="text-xs text-blue-600">Context</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
