@@ -1,15 +1,23 @@
 "use client";
 
-
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { 
   Plus,
   ChevronLeft,
   ChevronRight,
   Trash2,
   FileText,
-  Link
+  Link,
+  Eye
 } from "lucide-react";
 
 interface UploadItem {
@@ -47,6 +55,8 @@ export function Sidebar({
   onToggleCollapse,
   currentChatId 
 }: SidebarProps) {
+  const [previewItem, setPreviewItem] = useState<UploadItem | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const handleChatSelect = (chatId: string) => {
     onSelectChat(chatId);
@@ -76,6 +86,16 @@ export function Sidebar({
     if (url) {
       onUrlUpload(url);
     }
+  };
+
+  const handlePreviewClick = (upload: UploadItem) => {
+    setPreviewItem(upload);
+    setIsPreviewOpen(true);
+  };
+
+  const handleClosePreview = () => {
+    setIsPreviewOpen(false);
+    setPreviewItem(null);
   };
 
   return (
@@ -145,7 +165,8 @@ export function Sidebar({
                 {uploadHistory.slice(0, 5).map((upload) => (
                   <div
                     key={upload.id}
-                    className="group relative flex items-center rounded-lg hover:bg-gray-50 p-2"
+                    className="group relative flex items-center rounded-lg hover:bg-gray-50 p-2 cursor-pointer"
+                    onClick={() => handlePreviewClick(upload)}
                   >
                     <div className="flex-1 flex items-center gap-2">
                       {upload.type === 'pdf' ? (
@@ -163,16 +184,30 @@ export function Sidebar({
                       </div>
                     </div>
                     
-                    {/* Delete Button */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-1 p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-100 hover:text-red-600"
-                      onClick={(e) => handleDeleteUpload(e, upload.id)}
-                      title="Delete Upload"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
+                    {/* Preview and Delete Buttons */}
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-100 hover:text-blue-600"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePreviewClick(upload);
+                        }}
+                        title="Preview Content"
+                      >
+                        <Eye className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-100 hover:text-red-600"
+                        onClick={(e) => handleDeleteUpload(e, upload.id)}
+                        title="Delete Upload"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -246,6 +281,52 @@ export function Sidebar({
           </ScrollArea>
         </div>
       )}
+
+      {/* Preview Modal */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {previewItem?.type === 'pdf' ? (
+                <FileText className="w-5 h-5 text-red-500" />
+              ) : (
+                <Link className="w-5 h-5 text-blue-500" />
+              )}
+              {previewItem?.name}
+            </DialogTitle>
+            <DialogDescription>
+              {previewItem?.type === 'pdf' ? 'PDF Document' : 'Web Content'} • {previewItem?.timestamp.toLocaleDateString()}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-hidden">
+            {previewItem?.type === 'url' ? (
+              <div className="w-full h-96 border rounded-lg overflow-hidden">
+                <iframe
+                  src={previewItem.content}
+                  className="w-full h-full border-0"
+                  title="URL Preview"
+                  sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+                />
+              </div>
+            ) : previewItem?.type === 'pdf' ? (
+              <div className="w-full h-96 border rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                  <FileText className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                  <p className="text-gray-600 mb-2">PDF Preview</p>
+                  <p className="text-sm text-gray-500">{previewItem.name}</p>
+                  <Button 
+                    className="mt-3"
+                    onClick={() => window.open(previewItem.content, '_blank')}
+                  >
+                    Open PDF
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
