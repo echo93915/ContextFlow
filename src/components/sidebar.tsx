@@ -1,15 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { 
   Plus,
   ChevronLeft,
@@ -37,6 +29,7 @@ interface SidebarProps {
   onFileUpload: (file: File) => void;
   onUrlUpload: (url: string) => void;
   onDeleteUpload: (uploadId: string) => void;
+  onPreviewItem: (item: UploadItem) => void;
   collapsed?: boolean;
   onToggleCollapse: () => void;
   currentChatId?: string | null;
@@ -51,12 +44,11 @@ export function Sidebar({
   onFileUpload,
   onUrlUpload,
   onDeleteUpload,
+  onPreviewItem,
   collapsed = false,
   onToggleCollapse,
   currentChatId 
 }: SidebarProps) {
-  const [previewItem, setPreviewItem] = useState<UploadItem | null>(null);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const handleChatSelect = (chatId: string) => {
     onSelectChat(chatId);
@@ -88,15 +80,7 @@ export function Sidebar({
     }
   };
 
-  const handlePreviewClick = (upload: UploadItem) => {
-    setPreviewItem(upload);
-    setIsPreviewOpen(true);
-  };
 
-  const handleClosePreview = () => {
-    setIsPreviewOpen(false);
-    setPreviewItem(null);
-  };
 
   return (
     <div className={`bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ${
@@ -166,7 +150,7 @@ export function Sidebar({
                   <div
                     key={upload.id}
                     className="group relative flex items-center rounded-lg hover:bg-gray-50 p-2 cursor-pointer"
-                    onClick={() => handlePreviewClick(upload)}
+                    onClick={() => onPreviewItem(upload)}
                   >
                     <div className="flex-1 flex items-center gap-2">
                       {upload.type === 'pdf' ? (
@@ -192,7 +176,7 @@ export function Sidebar({
                         className="p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-100 hover:text-blue-600"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handlePreviewClick(upload);
+                          onPreviewItem(upload);
                         }}
                         title="Preview Content"
                       >
@@ -281,47 +265,6 @@ export function Sidebar({
           </ScrollArea>
         </div>
       )}
-
-      {/* Preview Modal */}
-      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-7xl max-h-[90vh] w-[95vw] h-[85vh]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              {previewItem?.type === 'pdf' ? (
-                <FileText className="w-5 h-5 text-red-500" />
-              ) : (
-                <Link className="w-5 h-5 text-blue-500" />
-              )}
-              {previewItem?.name}
-            </DialogTitle>
-            <DialogDescription>
-              {previewItem?.type === 'pdf' ? 'PDF Document' : 'Web Content'} • {previewItem?.timestamp.toLocaleDateString()}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="flex-1 overflow-hidden h-full">
-            {previewItem?.type === 'url' ? (
-              <div className="w-full h-full border rounded-lg overflow-hidden">
-                <iframe
-                  src={previewItem.content}
-                  className="w-full h-full border-0"
-                  title="URL Preview"
-                  sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
-                />
-              </div>
-            ) : previewItem?.type === 'pdf' ? (
-              <div className="w-full h-full border rounded-lg overflow-hidden">
-                <iframe
-                  src={`${previewItem.content}#toolbar=1&navpanes=1&scrollbar=1&page=1&view=FitH`}
-                  className="w-full h-full border-0"
-                  title="PDF Preview"
-                  type="application/pdf"
-                />
-              </div>
-            ) : null}
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

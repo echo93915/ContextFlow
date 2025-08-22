@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Sidebar } from "./sidebar";
 import { Header } from "./header";
 import { MainChat } from "./main-chat";
+import { ContentPreview } from "./content-preview";
 import { ChatMessage } from "@/lib/gemini";
 
 export interface UploadItem {
@@ -21,6 +22,7 @@ export function ChatLayout() {
   const [chatHistory, setChatHistory] = useState<Array<{ id: string; title: string; timestamp: Date; messages?: ChatMessage[] }>>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [uploadHistory, setUploadHistory] = useState<UploadItem[]>([]);
+  const [previewItem, setPreviewItem] = useState<UploadItem | null>(null);
 
 
   // Load messages from localStorage on mount
@@ -299,6 +301,14 @@ export function ChatLayout() {
     setSidebarCollapsed(!sidebarCollapsed);
   };
 
+  const handlePreviewItem = (item: UploadItem) => {
+    setPreviewItem(item);
+  };
+
+  const handleBackToChat = () => {
+    setPreviewItem(null);
+  };
+
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Header */}
@@ -316,17 +326,25 @@ export function ChatLayout() {
           onFileUpload={handleFileUpload}
           onUrlUpload={handleUrlUpload}
           onDeleteUpload={handleDeleteUpload}
+          onPreviewItem={handlePreviewItem}
           collapsed={sidebarCollapsed}
           onToggleCollapse={handleToggleSidebar}
           currentChatId={currentChatId}
         />
         
         {/* Main Content */}
-        <MainChat
-          messages={messages}
-          isLoading={isLoading}
-          onSendMessage={handleSendMessage}
-        />
+        {previewItem ? (
+          <ContentPreview
+            item={previewItem}
+            onBack={handleBackToChat}
+          />
+        ) : (
+          <MainChat
+            messages={messages}
+            isLoading={isLoading}
+            onSendMessage={handleSendMessage}
+          />
+        )}
       </div>
     </div>
   );
