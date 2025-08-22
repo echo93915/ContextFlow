@@ -284,7 +284,7 @@ export function Sidebar({
 
       {/* Preview Modal */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh]">
+        <DialogContent className="max-w-7xl max-h-[90vh] w-[95vw] h-[85vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {previewItem?.type === 'pdf' ? (
@@ -299,9 +299,9 @@ export function Sidebar({
             </DialogDescription>
           </DialogHeader>
           
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden h-full">
             {previewItem?.type === 'url' ? (
-              <div className="w-full h-96 border rounded-lg overflow-hidden">
+              <div className="w-full h-full border rounded-lg overflow-hidden">
                 <iframe
                   src={previewItem.content}
                   className="w-full h-full border-0"
@@ -310,18 +310,13 @@ export function Sidebar({
                 />
               </div>
             ) : previewItem?.type === 'pdf' ? (
-              <div className="w-full h-96 border rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
-                  <FileText className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-600 mb-2">PDF Preview</p>
-                  <p className="text-sm text-gray-500">{previewItem.name}</p>
-                  <Button 
-                    className="mt-3"
-                    onClick={() => window.open(previewItem.content, '_blank')}
-                  >
-                    Open PDF
-                  </Button>
-                </div>
+              <div className="w-full h-full border rounded-lg overflow-hidden">
+                <iframe
+                  src={`${previewItem.content}#toolbar=1&navpanes=1&scrollbar=1&page=1&view=FitH`}
+                  className="w-full h-full border-0"
+                  title="PDF Preview"
+                  type="application/pdf"
+                />
               </div>
             ) : null}
           </div>
