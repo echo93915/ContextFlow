@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUnifiedLLM } from '@/lib/llm-unified';
 import { getVectorStore } from '@/lib/enhanced-vector-store';
 import { sharedDocumentStore } from '@/lib/shared-document-store';
+import { getAgent } from '@/lib/agent-graph';
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, useContext = true, topK = 4, minScore = 0.1 } = await request.json();
+    const { message, useContext = true, topK = 4, minScore = 0.1, useAgent = false } = await request.json();
 
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
       return NextResponse.json(
@@ -16,6 +17,65 @@ export async function POST(request: NextRequest) {
 
     console.log(`💬 Chat request: "${message.slice(0, 100)}${message.length > 100 ? '...' : ''}"`);
 
+    // NEW: Agent-based routing (Phase 1.4 implementation)
+    if (useAgent) {
+      console.log('🤖 Using agent-based routing...');
+      try {
+        console.log('📡 Getting agent instance...');
+        const agent = getAgent();
+        console.log('✅ Agent instance created');
+        console.log('🔧 Agent config:', agent.getConfig());
+        
+        // Prepare user context from available data
+        console.log('📊 Preparing user context...');
+        const vectorStore = getVectorStore();
+        const stats = vectorStore.getStats();
+        console.log('📈 Vector store stats:', stats);
+        
+        const userContext = {
+          conversation_history: [], // TODO: Add actual conversation history
+          uploaded_documents: stats.totalSources > 0 ? vectorStore.getSources() : [],
+        };
+        console.log('📝 User context prepared:', { 
+          documentsCount: userContext.uploaded_documents.length,
+          historyCount: userContext.conversation_history.length 
+        });
+        
+        // Process through agent
+        console.log('🔄 Processing through agent...');
+        const agentResult = await agent.processInputDetailed(message, userContext);
+        console.log('✅ Agent processing complete');
+        
+        console.log(`🚦 Agent routing result: ${agentResult.workflow} (confidence: ${agentResult.confidence})`);
+        
+        return NextResponse.json({
+          response: agentResult.response,
+          contextUsed: false, // Agent handles context internally
+          agentInfo: {
+            workflow: agentResult.workflow,
+            confidence: agentResult.confidence,
+            metadata: agentResult.metadata,
+          },
+          llmInfo: {
+            provider: 'agent-system',
+            model: 'multi-workflow',
+            tokensUsed: 0,
+          }
+        });
+        
+      } catch (agentError) {
+        console.error('❌ Agent processing failed:', agentError);
+        console.error('Error details:', {
+          name: agentError.name,
+          message: agentError.message,
+          stack: agentError.stack?.slice(0, 500)
+        });
+        console.log('🔄 Falling back to traditional processing...');
+        // Fall through to traditional processing
+      }
+    }
+
+    // Traditional processing (existing implementation)
     // Initialize the unified LLM interface
     const llm = getUnifiedLLM({
       geminiApiKey: process.env.GEMINI_API_KEY,
