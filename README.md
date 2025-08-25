@@ -1,6 +1,6 @@
 # ContextFlow
 
-**Intelligent Multi-Agent System with Advanced RAG and Parallel Code Generation**
+**Intelligent Multi-Agent System with Advanced Context Engineering**
 
 ![Next.js](https://img.shields.io/badge/Next.js-15.5.0-black) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue) ![LangGraph](https://img.shields.io/badge/LangGraph-Agent-green) ![Gemini](https://img.shields.io/badge/AI-Google_Gemini-orange)
 
