@@ -71,8 +71,10 @@ Analyze the following user input and classify it into one of these categories:
 **Available Documents:** {documents}
 **Conversation Context:** {context}
 
-If the input could relate to the uploaded documents, prefer "document_query" classification.
-If the input is about generating code that might use information from documents, prefer "code_generation".
+**Classification Rules:**
+- Use "general_chat" for greetings, general questions, or conversations (e.g., "hello", "hi", "how are you?", "what can you do?")
+- Use "document_query" ONLY when the input explicitly asks about the uploaded documents or document content
+- Use "code_generation" for coding requests, even if they might use document information
 
 Respond in JSON format:
 {
@@ -313,7 +315,17 @@ export class AgentClassifier {
     const hasDocuments = state.user_context?.uploaded_documents?.length > 0;
     const hasKeywords = documentKeywords.some(keyword => input.includes(keyword));
     
-    return hasKeywords || hasDocuments;
+    // Check for explicit greetings and general chat patterns that should NOT be document queries
+    const greetingPatterns = [
+      "hello", "hi", "hey", "good morning", "good afternoon", "good evening",
+      "how are you", "what can you do", "help me", "thank you", "thanks"
+    ];
+    
+    const isGreeting = greetingPatterns.some(pattern => input.toLowerCase().includes(pattern));
+    
+    // Only classify as document query if there are explicit keywords AND it's not a greeting
+    // OR if the user explicitly mentions document-related terms
+    return hasKeywords && !isGreeting;
   }
 
   /**

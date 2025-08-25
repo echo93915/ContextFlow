@@ -146,7 +146,7 @@ export function ChatLayout() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: content }),
+        body: JSON.stringify({ message: content, useAgent: true }),
       });
 
       if (!response.ok) {
@@ -155,11 +155,12 @@ export function ChatLayout() {
 
       const data = await response.json();
       
-      // Add assistant message with context information
+      // Add assistant message with context information and agent info
       addMessage({ 
         role: 'assistant', 
         content: data.response,
-        contextUsed: data.contextUsed 
+        contextUsed: data.contextUsed,
+        agentInfo: data.agentInfo
       });
     } catch (error) {
       console.error('Error:', error);

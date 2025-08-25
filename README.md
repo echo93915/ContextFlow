@@ -23,7 +23,7 @@ User Input → Agent Classification → [CONDITIONAL ROUTING]
 
 ## Tech Stack
 
-- **Frontend**: Next.js 15, TypeScript, shadcn/ui, Tailwind CSS
+- **Frontend**: Next.js 15, TypeScript, shadcn/ui, Tailwind CSS, Radix UI
 - **AI**: Google Gemini API, OpenAI (fallback), LangGraph agents
 - **RAG**: Custom vector store, HNSW search, LangChain
 - **Processing**: pdf-parse, pdfjs-dist, advanced text chunking

@@ -1,6 +1,7 @@
 import { ChatMessage } from "@/lib/gemini";
 import { Bot, User, Brain } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
+import { CodeGenerationDisplay } from './code-generation-display';
 
 interface ChatMessageProps {
   message: ChatMessage;
@@ -74,6 +75,16 @@ export function ChatMessageComponent({ message }: ChatMessageProps) {
               {message.content}
             </ReactMarkdown>
           </div>
+          
+          {/* Code Generation Display */}
+          {!isUser && message.agentInfo && (
+            <div className="mt-4">
+              <CodeGenerationDisplay 
+                agentInfo={message.agentInfo}
+                response={message.content}
+              />
+            </div>
+          )}
         </div>
         <div className="flex items-center justify-between mt-1 px-2">
           <span className="text-xs text-gray-500">

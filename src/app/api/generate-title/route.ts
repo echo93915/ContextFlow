@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateUrlTitle } from '@/lib/gemini';
+import { getUnifiedLLM } from '@/lib/llm-unified';
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,7 +19,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const title = await generateUrlTitle(url);
+    // Generate title using unified LLM interface
+    const llm = getUnifiedLLM({
+      geminiApiKey: process.env.GEMINI_API_KEY,
+      openaiApiKey: process.env.OPENAI_API_KEY,
+      preferredProvider: 'auto'
+    });
+    
+    const systemMessage = "You are a helpful assistant that generates concise, descriptive titles for web URLs. Generate a title that captures the main topic or purpose of the webpage.";
+    const userMessage = `Generate a concise, descriptive title for this URL: ${url}
+    
+Please respond with only the title text, no quotes or additional formatting.`;
+    
+    const result = await llm.generateChatCompletion(systemMessage, userMessage);
+    const title = result.response.trim();
 
     return NextResponse.json({ title });
   } catch (error) {
