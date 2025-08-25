@@ -1,0 +1,237 @@
+/* Enhanced Progress Tracking Animations */
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes progressPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes statusGlow {
+  0%, 100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.6); }
+}
+
+@keyframes bounce-in {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slide-in {
+  0% { transform: translateY(-10px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes progress-fill {
+  0% { width: 0%; }
+  100% { width: var(--progress-width, 0%); }
+}
+
+@keyframes counter-up {
+  0% { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* Utility classes for animations */
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+.animate-progress-pulse {
+  animation: progressPulse 2s infinite;
+}
+
+.animate-status-glow {
+  animation: statusGlow 2s infinite;
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.5s ease-out;
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}
+
+.animate-progress-fill {
+  animation: progress-fill 1s ease-out;
+}
+
+.animate-counter-up {
+  animation: counter-up 0.5s ease-out;
+}
+
+/* Real-time indicator styles */
+.real-time-indicator {
+  position: relative;
+}
+
+.real-time-indicator::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+  animation: shimmer 3s infinite;
+  pointer-events: none;
+}
+
+/* Progress bar enhancements */
+.enhanced-progress {
+  position: relative;
+  overflow: hidden;
+}
+
+.enhanced-progress .progress-fill {
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.enhanced-progress.active .progress-fill {
+  animation: progressPulse 2s infinite;
+}
+
+/* Status badge animations */
+.status-badge {
+  transition: all 0.3s ease;
+}
+
+.status-badge.running {
+  animation: statusGlow 2s infinite;
+}
+
+.status-badge.completed {
+  animation: bounce-in 0.5s ease-out;
+}
+
+/* Metric counter animations */
+.metric-counter {
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.metric-counter.updated {
+  animation: counter-up 0.5s ease-out;
+  color: #3b82f6;
+}
+
+/* Task card hover effects */
+.task-card {
+  transition: all 0.2s ease;
+}
+
+.task-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.task-card.active {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 1px #3b82f6, 0 0 10px rgba(59, 130, 246, 0.3);
+}
+
+/* Connection status indicator */
+.connection-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.connection-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.connection-dot.connected {
+  background-color: #10b981;
+  animation: pulse 2s infinite;
+}
+
+.connection-dot.disconnected {
+  background-color: #ef4444;
+}
+
+/* Live update animation */
+@keyframes live-update {
+  0% { opacity: 0.5; transform: scale(0.95); }
+  50% { opacity: 1; transform: scale(1.02); }
+  100% { opacity: 0.8; transform: scale(1); }
+}
+
+.live-update {
+  animation: live-update 1s ease-out;
+}
+
+/* Text overflow and seamless UI utilities */
+.seamless-text {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.seamless-container {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.seamless-multiline {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Ensure proper scrollbar styling */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db #f9fafb;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f9fafb;
+  border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .animate-shimmer {
+    animation-duration: 1.5s;
+  }
+  
+  .task-card:hover {
+    transform: none;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .animate-status-glow {
+    animation: statusGlow 2s infinite;
+  }
+  
+  .real-time-indicator::before {
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.05) 50%, transparent 70%);
+  }
+}

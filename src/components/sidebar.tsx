@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
@@ -48,6 +49,8 @@ export function Sidebar({
   onToggleCollapse,
   currentChatId 
 }: SidebarProps) {
+  const [hoveredChatId, setHoveredChatId] = useState<string | null>(null);
+  const [hoveredUploadId, setHoveredUploadId] = useState<string | null>(null);
 
   const handleChatSelect = (chatId: string) => {
     onSelectChat(chatId);
@@ -148,8 +151,10 @@ export function Sidebar({
                 {uploadHistory.slice(0, 5).map((upload) => (
                   <div
                     key={upload.id}
-                    className="group relative flex items-center rounded-lg hover:bg-gray-50 p-2 cursor-pointer min-w-0"
+                    className="relative flex items-center rounded-lg hover:bg-gray-50 p-2 cursor-pointer min-w-0 transition-colors"
                     onClick={() => onPreviewItem(upload)}
+                    onMouseEnter={() => setHoveredUploadId(upload.id)}
+                    onMouseLeave={() => setHoveredUploadId(null)}
                   >
                     <div className="flex-1 flex items-center gap-2 min-w-0 overflow-hidden">
                       <div className="flex-shrink-0">
@@ -169,16 +174,21 @@ export function Sidebar({
                       </div>
                     </div>
                     
-                    {/* Delete Button Only */}
+                    {/* Delete Button - State-based visibility */}
                     <div className="flex items-center">
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-100 hover:text-red-600"
+                        className={`
+                          p-1.5 rounded-md transition-all duration-200 z-10
+                          ${hoveredUploadId === upload.id ? 'opacity-100' : 'opacity-0'}
+                          hover:bg-red-100 hover:text-red-600 hover:shadow-sm 
+                          focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-300
+                        `}
                         onClick={(e) => handleDeleteUpload(e, upload.id)}
                         title="Delete Upload"
                       >
-                        <Trash2 className="w-3 h-3" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </Button>
                     </div>
                   </div>
@@ -218,16 +228,18 @@ export function Sidebar({
                 {chatHistory.map((chat) => (
                   <div
                     key={chat.id}
-                    className={`group relative flex items-center rounded-lg ${
+                    className={`relative flex items-center rounded-lg transition-colors ${
                       currentChatId === chat.id ? 'bg-gray-100' : 'hover:bg-gray-50'
                     }`}
+                    onMouseEnter={() => setHoveredChatId(chat.id)}
+                    onMouseLeave={() => setHoveredChatId(null)}
                   >
                     <Button
                       variant="ghost"
                       className="flex-1 justify-start p-2 h-auto rounded-lg"
                       onClick={() => handleChatSelect(chat.id)}
                     >
-                      <div className="text-left overflow-hidden pr-8">
+                      <div className="text-left overflow-hidden pr-10">
                         <div className="text-sm font-medium truncate">
                           {chat.title}
                         </div>
@@ -237,15 +249,23 @@ export function Sidebar({
                       </div>
                     </Button>
                     
-                    {/* Delete Button - Shows on hover */}
+                    {/* Delete Button - State-based visibility */}
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="absolute right-1 p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-100 hover:text-red-600"
+                      className={`
+                        absolute right-1 p-1.5 rounded-md transition-all duration-200 z-10
+                        ${(currentChatId === chat.id || hoveredChatId === chat.id)
+                          ? 'opacity-100' 
+                          : 'opacity-0'
+                        }
+                        hover:bg-red-100 hover:text-red-600 hover:shadow-sm
+                        focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-300
+                      `}
                       onClick={(e) => handleDeleteChat(e, chat.id)}
                       title="Delete Chat"
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   </div>
                 ))}

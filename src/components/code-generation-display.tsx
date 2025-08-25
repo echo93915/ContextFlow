@@ -7,9 +7,11 @@ import {
   MainTaskCard, 
   SubtaskGrid, 
   TaskExecutionMonitor,
+  RealTimeProgressTracker,
   type MainTaskData,
   type SubtaskData,
-  type ExecutionMetrics
+  type ExecutionMetrics,
+  type ProgressTrackingData
 } from './task-management';
 import { TaskDetailModal } from './task-management/task-detail-modal';
 import { 
@@ -47,7 +49,7 @@ export function CodeGenerationDisplay({
 }: CodeGenerationDisplayProps) {
   const [selectedTask, setSelectedTask] = useState<MainTaskData | SubtaskData | null>(null);
   const [showTaskDetail, setShowTaskDetail] = useState(false);
-  const [currentView, setCurrentView] = useState<'overview' | 'subtasks' | 'monitor'>('overview');
+  const [currentView, setCurrentView] = useState<'overview' | 'subtasks' | 'monitor' | 'realtime'>('overview');
 
   // Check if this is a code generation response
   if (!agentInfo || agentInfo.workflow !== 'code_generation') {
@@ -191,6 +193,17 @@ export function CodeGenerationDisplay({
             <Activity className="w-4 h-4 mr-1 inline" />
             Metrics
           </button>
+          <button
+            onClick={() => setCurrentView('realtime')}
+            className={`px-3 py-1 text-sm rounded-md transition-colors ${
+              currentView === 'realtime' 
+                ? 'bg-white text-gray-900 shadow-sm' 
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <RefreshCw className="w-4 h-4 mr-1 inline" />
+            Live
+          </button>
         </div>
       </div>
 
@@ -256,6 +269,55 @@ export function CodeGenerationDisplay({
         <TaskExecutionMonitor
           metrics={executionMetrics}
           isRealTime={false}
+        />
+      )}
+
+      {currentView === 'realtime' && (
+        <RealTimeProgressTracker
+          data={{
+            mainTask: {
+              id: mainTaskData.id,
+              title: mainTaskData.title,
+              status: mainTaskData.status as 'pending' | 'running' | 'completed' | 'failed',
+              progress: mainTaskData.progress,
+              startTime: mainTaskData.startTime,
+              estimatedDuration: mainTaskData.estimatedDuration
+            },
+            subtasks: subtasksData.map(subtask => ({
+              id: subtask.id,
+              status: subtask.status as 'pending' | 'running' | 'completed' | 'failed' | 'paused',
+              progress: subtask.progress,
+              startTime: subtask.startTime,
+              endTime: subtask.endTime,
+              estimatedDuration: subtask.estimatedDuration,
+              actualDuration: subtask.executionTime,
+              priority: subtask.priority as 'low' | 'medium' | 'high' | 'critical',
+              isRealTime: true
+            })),
+            executionMetrics: {
+              totalDuration: executionMetrics.totalExecutionTime,
+              averageTaskTime: executionMetrics.averageTaskTime,
+              successRate: executionMetrics.successRate,
+              throughput: executionMetrics.throughput,
+              concurrentTasks: executionMetrics.concurrentTasks,
+              completedTasks: executionMetrics.completedTasks,
+              failedTasks: executionMetrics.failedTasks,
+              queueLength: executionMetrics.queueLength
+            },
+            isRealTime: true,
+            lastUpdate: new Date()
+          }}
+          enableWebSocket={false}
+          updateInterval={2000}
+          showDetailedView={true}
+          onTaskClick={(taskId) => {
+            const task = [...subtasksData, mainTaskData].find(t => t.id === taskId);
+            if (task) handleTaskClick(task);
+          }}
+          onRefresh={() => {
+            // In production, this would trigger a refresh of real-time data
+            console.log('Refreshing real-time data...');
+          }}
         />
       )}
 

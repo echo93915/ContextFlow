@@ -5,6 +5,10 @@ import { Sidebar } from "./sidebar";
 import { Header } from "./header";
 import { MainChat } from "./main-chat";
 import { ContentPreview } from "./content-preview";
+import { LiveCodeGenerationPanel } from "./live-code-generation-panel";
+import { LiveProgressSidebar } from "./live-progress-sidebar";
+import { useCodeGenerationPanel } from "@/hooks/use-code-generation-panel";
+import { useLiveProgress } from "@/hooks/use-live-progress";
 import { ChatMessage } from "@/lib/gemini";
 
 export interface UploadItem {
@@ -23,6 +27,35 @@ export function ChatLayout() {
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [uploadHistory, setUploadHistory] = useState<UploadItem[]>([]);
   const [previewItem, setPreviewItem] = useState<UploadItem | null>(null);
+  
+  // Code generation panel
+  const {
+    isVisible: isPanelVisible,
+    isMinimized: isPanelMinimized,
+    currentAgentInfo,
+    currentResponse,
+    showPanel,
+    updatePanel,
+    hidePanel,
+    minimizePanel,
+    maximizePanel
+  } = useCodeGenerationPanel();
+  
+  // Live progress sidebar
+  const {
+    progressData,
+    isVisible: isProgressVisible,
+    isMinimized: isProgressMinimized,
+    startProgress,
+    updateProgress,
+    completeProgress,
+    simulateProgress,
+    hideProgress,
+    showProgress,
+    minimizeProgress,
+    maximizeProgress,
+    closeProgress
+  } = useLiveProgress();
 
 
   // Load messages from localStorage on mount
@@ -136,6 +169,60 @@ export function ChatLayout() {
       setCurrentChatId(crypto.randomUUID());
     }
     
+    // Check if this looks like a code generation request
+    const isCodeRequest = /\b(create|build|write|generate|implement|develop|code|function|component|api|script|program)\b/i.test(content);
+    
+    let currentRequestId: string | null = null;
+    if (isCodeRequest) {
+      // Hide the code generation panel initially (we'll show progress sidebar instead)
+      hidePanel();
+      // Start progress tracking
+      currentRequestId = crypto.randomUUID();
+      startProgress(currentRequestId, content.slice(0, 50), content);
+      
+      // Simulate initial progress steps
+      setTimeout(() => {
+        if (currentRequestId) {
+          updateProgress({
+            requestId: currentRequestId,
+            type: 'progress',
+            mainTask: {
+              title: content.slice(0, 50),
+              description: 'Analyzing your request and planning code generation...',
+              status: 'running',
+              progress: 10
+            },
+            executionMetrics: {
+              totalDuration: 0,
+              averageTaskTime: 0,
+              successRate: 1,
+              throughput: 0,
+              concurrentTasks: 0,
+              completedTasks: 0,
+              failedTasks: 0,
+              queueLength: 0
+            }
+          });
+        }
+      }, 500);
+      
+      // Simulate decomposition phase
+      setTimeout(() => {
+        if (currentRequestId) {
+          updateProgress({
+            requestId: currentRequestId,
+            type: 'progress',
+            mainTask: {
+              title: content.slice(0, 50),
+              description: 'Breaking down into subtasks...',
+              status: 'running',
+              progress: 25
+            }
+          });
+        }
+      }, 1500);
+    }
+    
     // Add user message
     addMessage({ role: 'user', content });
     setIsLoading(true);
@@ -155,6 +242,70 @@ export function ChatLayout() {
 
       const data = await response.json();
       
+      // Update code generation panel if this was a code request
+      if (isCodeRequest && data.agentInfo) {
+        
+        // If we have code generation results, update the progress with actual subtasks
+        if (data.agentInfo.workflow === 'code_generation' && 
+            data.agentInfo.metadata?.workflow_parameters?.subtasks && 
+            currentRequestId) {
+          const subtasks = data.agentInfo.metadata.workflow_parameters.subtasks;
+          const subtaskData = subtasks.map((s: any, idx: number) => ({
+            id: `subtask-${idx}`,
+            title: s.title || `Subtask ${idx + 1}`,
+            description: s.description || '',
+            status: 'completed' as const,
+            progress: 100,
+            isRealTime: true,
+            priority: s.priority || 'medium',
+            complexity: s.complexity_score || 0.5,
+            executionTime: s.execution_time || 2000
+          }));
+          
+          // Update with final state
+          updateProgress({
+            requestId: currentRequestId,
+            type: 'progress',
+            mainTask: {
+              title: content.slice(0, 50),
+              description: 'Code generation completed successfully!',
+              status: 'running',
+              progress: 95
+            },
+            subtasks: subtaskData,
+            executionMetrics: {
+              totalDuration: data.agentInfo.metadata.workflow_parameters.executionMetrics?.parallelExecutionTime || 5000,
+              averageTaskTime: data.agentInfo.metadata.workflow_parameters.executionMetrics?.averageTaskTime || 2000,
+              successRate: 1,
+              throughput: data.agentInfo.metadata.workflow_parameters.executionMetrics?.throughput || 0.5,
+              concurrentTasks: 0,
+              completedTasks: subtasks.length,
+              failedTasks: 0,
+              queueLength: 0
+            }
+          });
+          
+          // Complete the progress
+          setTimeout(() => {
+            completeProgress(currentRequestId, true);
+            // After completion, show the code generation panel with results
+            setTimeout(() => {
+              updatePanel(data.agentInfo, data.response);
+              showPanel();
+              // Progress sidebar will remain visible until user manually closes it
+            }, 2000);
+          }, 500);
+        } else {
+          // No subtasks, just update the panel
+          updatePanel(data.agentInfo, data.response);
+          showPanel();
+          if (currentRequestId) {
+            completeProgress(currentRequestId, true);
+            // Progress sidebar will remain visible until user manually closes it
+          }
+        }
+      }
+      
       // Add assistant message with context information and agent info
       addMessage({ 
         role: 'assistant', 
@@ -164,6 +315,7 @@ export function ChatLayout() {
       });
     } catch (error) {
       console.error('Error:', error);
+      
       addMessage({ 
         role: 'assistant', 
         content: 'Sorry, I encountered an error. Please make sure your Gemini API key is configured correctly.' 
@@ -519,6 +671,27 @@ export function ChatLayout() {
             onSendMessage={handleSendMessage}
           />
         )}
+        
+        {/* Live Code Generation Panel - Disabled */}
+        <LiveCodeGenerationPanel
+          agentInfo={currentAgentInfo}
+          response={currentResponse}
+          isVisible={false}
+          isMinimized={isPanelMinimized}
+          onClose={hidePanel}
+          onMinimize={minimizePanel}
+          onMaximize={maximizePanel}
+        />
+        
+        {/* Live Progress Sidebar */}
+        <LiveProgressSidebar
+          progressData={progressData}
+          isVisible={isProgressVisible}
+          isMinimized={isProgressMinimized}
+          onClose={closeProgress}
+          onMinimize={minimizeProgress}
+          onMaximize={maximizeProgress}
+        />
       </div>
     </div>
   );
