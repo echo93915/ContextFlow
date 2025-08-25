@@ -1,32 +1,32 @@
 # ContextFlow
 
-**AI-powered chatbot with RAG (Retrieval-Augmented Generation) for document-based conversations.**
+**Intelligent Multi-Agent System with Advanced RAG and Parallel Code Generation**
 
-![Next.js](https://img.shields.io/badge/Next.js-15.5.0-black) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue) ![Gemini](https://img.shields.io/badge/AI-Google_Gemini-orange)
+![Next.js](https://img.shields.io/badge/Next.js-15.5.0-black) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue) ![LangGraph](https://img.shields.io/badge/LangGraph-Agent-green) ![Gemini](https://img.shields.io/badge/AI-Google_Gemini-orange)
 
 ## Features
 
-- **RAG Pipeline**: Upload PDFs, get AI answers based on document content
-- **Smart Chat**: Modern interface with conversation history
-- **Multi-Provider AI**: Google Gemini + OpenAI fallback
-- **Vector Search**: Semantic similarity search for precise context retrieval
-- **Real-time Processing**: Live document processing with progress feedback
+- **Intelligent Agent System**: Multi-tier routing with automatic classification between document queries, general chat, and code generation
+- **Advanced Code Generation**: Parallel subtask execution with interactive task management and dependency handling
+- **Enhanced RAG Pipeline**: Smart document processing with semantic vector search and multi-provider fallback
+- **Modern Chat Interface**: Conversation history with visual task cards and multi-workflow support
 
-## RAG Pipeline
+## Architecture
 
 ```
-PDF Upload → Text Extraction → Chunking → Embeddings → Vector Storage
+User Input → Agent Classification → [CONDITIONAL ROUTING]
      ↓
-User Query → Embedding → Similarity Search → Context Retrieval → Answer Generation
+[Document Query] → Embedding → Similarity Search → Context → Response
+[Code Generation] → Task Analysis → Parallel Execution → Integration → Response
+[General Chat] → Context Enrichment → Response Generation
 ```
 
 ## Tech Stack
 
-- **Framework**: Next.js 15 with TypeScript
-- **AI**: Google Gemini API, OpenAI (fallback)
-- **RAG**: LangChain, Transformers.js, HNSW vector search
-- **PDF Processing**: pdf-parse, pdfjs-dist
-- **UI**: shadcn/ui, Tailwind CSS, Radix UI
+- **Frontend**: Next.js 15, TypeScript, shadcn/ui, Tailwind CSS
+- **AI**: Google Gemini API, OpenAI (fallback), LangGraph agents
+- **RAG**: Custom vector store, HNSW search, LangChain
+- **Processing**: pdf-parse, pdfjs-dist, advanced text chunking
 
 ## Quick Start
 
@@ -66,29 +66,30 @@ GEMINI_CHAT_MODEL=gemini-1.5-flash
 
 ## Usage
 
-1. **Upload Document**: Drag & drop PDF files
-2. **Wait for Processing**: Documents are chunked and embedded
-3. **Ask Questions**: Get AI responses based on document content
-4. **View Sources**: See which document sections informed the answer
+1. **Upload Documents**: Drag & drop PDF files for processing
+2. **Ask Questions**: Get AI responses based on document content or request code generation
+3. **Monitor Progress**: View real-time progress for complex code generation tasks
+4. **Review Results**: Access generated code and document insights
 
 ## API Endpoints
 
-- `POST /api/chat` - Chat with RAG context
+- `POST /api/chat` - Multi-workflow chat with intelligent routing
 - `POST /api/process-document` - Upload and process documents
-- `POST /api/retrieve-context` - Search document content
+- `POST /api/retrieve-context` - Semantic search with vector similarity
+- `POST /api/extract-text` - PDF text extraction
 - `GET /api/debug-rag` - Pipeline debugging
 
 ## Project Structure
 
 ```
 src/
-├── app/api/           # API routes for RAG pipeline
+├── app/api/           # API routes
 ├── components/        # UI components
-└── lib/
-    ├── enhanced-vector-store.ts    # Vector similarity search
-    ├── pdf-processor.ts           # PDF text extraction
-    ├── llm-unified.ts            # Multi-provider AI interface
-    └── text-processing.ts        # Document chunking
+└── lib/              # Core libraries
+    ├── enhanced-vector-store.ts
+    ├── pdf-processor.ts
+    ├── llm-unified.ts
+    └── text-processing.ts
 ```
 
 ## Deployment
@@ -147,4 +148,4 @@ MIT License
 
 ---
 
-**Built with Next.js 15, Google Gemini, and modern RAG architecture**
+**Built with Next.js 15, LangGraph Agents, Google Gemini, and Advanced RAG + Code Generation Architecture**
