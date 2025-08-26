@@ -13,6 +13,7 @@ _ContextFlow's main interface showing intelligent chat, document processing, and
 ## Features
 
 - **Intelligent Agent System**: Multi-tier routing with automatic classification between document queries, general chat, and code generation
+- **Advanced Context Engineering**: Dynamic context assembly with intelligent prompt optimization and multi-source information synthesis
 - **Advanced Code Generation**: Parallel subtask execution with interactive task management and dependency handling
 - **Enhanced RAG Pipeline**: Smart document processing with semantic vector search and multi-provider fallback
 - **Modern Chat Interface**: Conversation history with visual task cards and multi-workflow support
