@@ -4,6 +4,12 @@
 
 ![Next.js](https://img.shields.io/badge/Next.js-15.5.0-black) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue) ![LangGraph](https://img.shields.io/badge/LangGraph-Agent-green) ![Gemini](https://img.shields.io/badge/AI-Google_Gemini-orange)
 
+## Preview
+
+![ContextFlow App Screenshot](./inAppExample.png)
+
+_ContextFlow's main interface showing intelligent chat, document processing, and real-time task management_
+
 ## Features
 
 - **Intelligent Agent System**: Multi-tier routing with automatic classification between document queries, general chat, and code generation
