@@ -57,7 +57,6 @@ export function ChatLayout() {
     closeProgress
   } = useLiveProgress();
 
-
   // Load messages from localStorage on mount
   useEffect(() => {
     const savedMessages = localStorage.getItem('chatbot-messages');
@@ -170,7 +169,7 @@ export function ChatLayout() {
     }
     
     // Check if this looks like a code generation request
-    const isCodeRequest = /\b(create|build|write|generate|implement|develop|code|function|component|api|script|program)\b/i.test(content);
+    const isCodeRequest = /\b(create|build|write|generate|implement|develop|code|function|component|api|script|program|make|design|app|website|project|task|todo|list|dashboard|ui|interface|page|show|progress)\b/i.test(content);
     
     let currentRequestId: string | null = null;
     if (isCodeRequest) {
